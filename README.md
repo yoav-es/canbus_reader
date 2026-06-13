@@ -1,4 +1,3 @@
-Markdown
 # 🏎️ CAN Bus Edge Collector & Parser
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
@@ -13,16 +12,6 @@ A high-throughput, resilient Edge data logging system designed to ingest, parse,
 
 The system architecture decouples high-frequency hardware ingestion from slow disk I/O operations using an in-memory thread-safe pipeline.
 
-[Raw CAN Bus Frame]
-│
-▼ (Ingestion - Non-blocking Read)
-[SocketCAN / python-can]
-│
-▼ (Parsing - Memory Only)
-[Dynamic Config-driven Bitwise Decoder]
-│
-▼ (Buffering)
-[Thread-safe RAM Queue] ──(Accumulate Batch)──► [Local I/O Target (JSONL / DB)]
 
 
 ---
@@ -54,12 +43,12 @@ The system architecture decouples high-frequency hardware ingestion from slow di
 
 The binary payload structure layout decoded by the generic parser:
 
-| Sensor Name | Device ID (HEX) | Data Length | Payload Layout (Bytes) | Target Unit |
-| :--- | :---: | :---: | :--- | :---: |
-| **Temperature** | `0x1A0` | 2 Bytes | Int16 (Big-Endian) | °C |
-| **Humidity** | `0x1A1` | 2 Bytes | UInt16 (Big-Endian) | % |
-| **Voltage** | `0x2B0` | 2 Bytes | UInt16 * 0.01 Scale | V |
-| **RPM (Speed)** | `0x3C0` | 2 Bytes | UInt16 | RPM |
+| Sensor Name | Device ID (HEX) | Min Value | Max Value |
+| :--- | :---: | :---: | :---: |
+| **Temp Sensor** | `0x10A` | 40.0 | 120.0 |
+| **RPM Sensor** | `0x110` | 800.0 | 7200.0 |
+| **Speed Sensor** | `0x120` | 0.0 | 180.0 |
+| **Oil Pressure** | `0x130` | 0.5 | 5.0 |
 
 ---
 
@@ -69,3 +58,18 @@ The binary payload structure layout decoded by the generic parser:
 2. **Decode:** Map raw byte slices into mathematical physical values via the runtime configuration schema. Gracefully quarantine corrupted frames to a dead-letter log without breaking execution flow.
 3. **Buffer:** Safely enqueue state dictionaries into the thread-safe RAM queue.
 4. **Flush:** Stream accumulated data matrices directly into the persistent storage backend via atomic batch transactions, minimizing system write bottlenecks.
+
+---
+
+## 🛠️ Simulation & Development
+
+The repository includes a dedicated `simulator/` module that provides a complete synthetic data environment. This allows for decoupled development of the ingest and parsing logic without requiring actual hardware connectivity.
+
+* **Mock Engine:** A lightweight, asynchronous `canbus_simulator` (v1.0.0) that generates realistic sensor telemetry.
+* **Protocol:** Employs UDP broadcasting (`127.0.0.1:5005`) to emulate the physical CAN bus behavior in a software-only environment, ensuring low-latency inter-process communication.
+* **Resiliency:** The simulator is designed as a standalone "Sensor Node" – it streams data in a non-blocking `async` loop, adhering to real-world hardware behavior where the sender does not verify reception.
+
+> **Development Note:** The simulator is version-controlled and provides a reliable baseline for testing the `Receiver/Collector` logic currently under development in the root directory.
+
+
+
