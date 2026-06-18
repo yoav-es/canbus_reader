@@ -71,5 +71,15 @@ The repository includes a dedicated `simulator/` module that provides a complete
 
 > **Development Note:** The simulator is version-controlled and provides a reliable baseline for testing the `Receiver/Collector` logic currently under development in the root directory.
 
+---
 
+## 📅 Recent Development Session (v0.2.0 Update)
+
+### Decoupled Sensor Architecture & Core Interface Definition
+In the latest session, we established the fundamental abstract architecture for the parsing engine to align with distributed microservice principles:
+
+* **`BaseSensor` Interface Integration:** Defined a rigid, configuration-driven abstract base class (`ABC`) that isolates individual sensor logic from the main telemetry pipeline execution.
+* **Pure Decoupling Rule:** Completely stripped hardcoded type constraints and thresholds from the initialization layer. Sensors now load limits, data types, and operational states dynamically via external runtime parameters.
+* **Type-Agnostic Validation:** Extended the validation mechanism into an abstract method capable of handling generic payload mutations (e.g., dynamic type checking across float ranges, discrete integers, or boolean flag structures).
+* **Pipeline vs Sensor Isolation:** Enforced a strict boundary where the sensor module remains stateless regarding downstream processing—it is solely responsible for parsing (`decode`) and safety-checking (`validate`) data fields, while the runtime orchestrator manages execution loops and external states.
 
