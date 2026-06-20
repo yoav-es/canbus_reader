@@ -1,11 +1,9 @@
 import struct
+from src.utils import calculate_can_crc
 
 # --- CAN Protocol Constants ---
 CAN_A_MAX_ID = 0x7FF
 CAN_B_MAX_ID = 0x1FFFFFFF
-
-CAN_CRC_POLYNOMIAL = 0x4599
-CAN_CRC_MASK = 0x7FFF
 
 CAN_CRC_DELIMITER = "1"
 CAN_PAYLOAD_SIZE_BITS = 64
@@ -98,32 +96,6 @@ def create_payload(value: float) -> str:
     payload_bits = [bin(byte)[2:].zfill(8) for byte in raw_bytes]
     
     return "".join(payload_bits)
-
-
-def calculate_can_crc(bit_stream: str) -> str:
-    """
-    Calculates the 15-bit CAN CRC remainder for a given binary bit stream.
-    Implements polynomial division using the standard CAN-15 polynomial (0x4599).
-    """
-    remainder = 0x0000
-    
-    for bit_char in bit_stream:
-        input_bit = int(bit_char)
-        
-        # Isolate the Most Significant Bit (MSB) of the current 15-bit register
-        remainder_msb = (remainder >> 14) & 1
-        
-        # Shift the register left and apply mask to constrain it to 15 bits
-        remainder = (remainder << 1) & CAN_CRC_MASK
-        
-        # Execute conditional feedback division loop
-        if remainder_msb ^ input_bit:
-            remainder ^= CAN_CRC_POLYNOMIAL
-            
-    # Return the final calculated remainder padded to 15 bits
-    return bin(remainder)[2:].zfill(15)
-
-
 
 
 if __name__ == "__main__":

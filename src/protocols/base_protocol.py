@@ -19,6 +19,15 @@ class BaseProtocol(ABC):
         self.port = port
         self.parameters = {}  # Dynamic dictionary for additional config settings
 
+
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.disconnect()
+        return False
+
     @abstractmethod
     def connect(self) -> None:
         """Open the socket connection or communication channel with the hardware/simulator.
@@ -36,7 +45,7 @@ class BaseProtocol(ABC):
         pass
 
     @abstractmethod
-    def read_raw_frame(self) -> str:
+    def read_raw_frame(self) -> bytes:
         """Listen to the channel and read a single raw message frame (payload).
 
         Must be implemented by subclasses.

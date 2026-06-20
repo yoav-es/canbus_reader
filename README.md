@@ -83,3 +83,16 @@ In the latest session, we established the fundamental abstract architecture for 
 * **Type-Agnostic Validation:** Extended the validation mechanism into an abstract method capable of handling generic payload mutations (e.g., dynamic type checking across float ranges, discrete integers, or boolean flag structures).
 * **Pipeline vs Sensor Isolation:** Enforced a strict boundary where the sensor module remains stateless regarding downstream processing—it is solely responsible for parsing (`decode`) and safety-checking (`validate`) data fields, while the runtime orchestrator manages execution loops and external states.
 
+---
+
+## 📅 Recent Development Session (v0.3.0 Update)
+
+### Protocol Layer Refinement & Data Integrity Workflow
+
+In the latest session, we optimized the protocol ingestion layer to ensure robust, production-ready frame handling and structural clarity:
+
+* **CRC-First Validation:** Integrated a strict integrity-check mechanism within the decoding pipeline. Frames failing the `calculate_can_crc` verification are now discarded immediately at the `decode` phase to prevent corrupted data propagation.
+* **Separation of Concerns:** Explicitly decoupled raw frame identification (`parse_raw_frame`) from payload decoding (`decode_can_payload`). This ensures the protocol handler focuses solely on boundary definition and structural integrity.
+* **Protocol-Agnostic Header Handling:** Standardized the header-to-payload slicing logic. The interface now dynamically adapts its offset based on the CAN frame type (Standard/Extended) without logic leakage into higher-level application components.
+* **Resilient Logging & Diagnostics:** Standardized logging across the protocol module to follow production best practices, ensuring clear diagnostic trails for connection states and parity/CRC mismatches without cluttering the data stream.
+* **Structural Cleanup:** Refactored the `Canbus` communication module for strict PEP 8 compliance, removing stale buffer definitions and implementing documentation-driven interface methods.
