@@ -96,3 +96,22 @@ In the latest session, we optimized the protocol ingestion layer to ensure robus
 * **Protocol-Agnostic Header Handling:** Standardized the header-to-payload slicing logic. The interface now dynamically adapts its offset based on the CAN frame type (Standard/Extended) without logic leakage into higher-level application components.
 * **Resilient Logging & Diagnostics:** Standardized logging across the protocol module to follow production best practices, ensuring clear diagnostic trails for connection states and parity/CRC mismatches without cluttering the data stream.
 * **Structural Cleanup:** Refactored the `Canbus` communication module for strict PEP 8 compliance, removing stale buffer definitions and implementing documentation-driven interface methods.
+
+---
+
+📅 Development Session (v0.3.1 Update)
+Architectural Refinement & Interface Decoupling
+In this session, we refactored the base sensor interface and the CAN protocol communication layer to support a passive data pipeline:
+
+Signature Update: Updated the BaseSensor.read() signature to accept a raw_payload, shifting the sensor's responsibility from active acquisition to passive data transformation.
+
+Interface Decoupling: Decoupled the sensor’s internal logic from the protocol’s communication method, ensuring sensors act as pure data decoders regardless of the acquisition source.
+
+Resilience Implementation: Introduced defensive error handling within the read method, ensuring that decoding failures or validation errors return a controlled status instead of propagating exceptions.
+
+Singleton State Management: Optimized the CAN protocol implementation to support shared instance usage, preventing resource contention and redundant connection initialization across sensor instances.
+
+Validation Hook: Established the structural groundwork for a modular validator within the sensor’s processing pipeline, allowing for future integration of strict integrity checks.
+
+---
+

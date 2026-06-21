@@ -1,66 +1,36 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, Callable, Optional
 
 
 class BaseSensor(ABC):
     """Abstract Base Class (Interface) defining the core architecture for all sensors.
-
-    Handles basic sensor metadata, the processed data store, and enforces
-    the decoupling of decoding and validation logic for distributed services.
+    
+    This class enforces a clean I/O interface. Validation logic is injected 
+    via a callable (like a lambda) at initialization, keeping the class 
+    stateless and focused solely on processing.
     """
 
-    def __init__(self, name: str, sensor_id: int):
-        """Initialize core sensor attributes.
-
+    def __init__(self, name: str, sensor_id: int, validator: Optional[Callable[[Any], bool]] = None):
+        """
         Args:
-            name (str): Name of the sensor (e.g., 'engine_rpm').
-            sensor_id (int): Hexadecimal or integer ID of the sensor.
+            name (str): Name of the sensor.
+            sensor_id (int): ID of the sensor.
+            validator (Callable): A lambda or function to validate decoded values.
         """
         self.name = name
         self.id = sensor_id
-        self.data: Dict[str, Any] = {}  # Stores the latest processed/decoded values
-
-    def get_data(self) -> Dict[str, Any]:
-        """Retrieve the latest processed data from the sensor.
-
-        Returns:
-            Dict[str, Any]: A dictionary containing the parsed sensor fields.
-        """
-        return self.data
+        self.validator = validator
 
     @abstractmethod
-    def decode(self, raw_frame: str) -> Dict[str, Any]:
-        """Decode raw protocol data into meaningful physical values.
-
-        Must be implemented by subclasses to handle specific bit-masking or slicing.
-
-        Args:
-            raw_frame (str): The raw frame/payload received from the protocol layer.
-
-        Returns:
-            Dict[str, Any]: The newly decoded telemetry data.
+    def read(self, raw_payload: Any) -> Dict[str, Any]:
+        """
+        Processes raw data, performs decoding, validates using the injected 
+        validator, and returns the result.
         """
         pass
 
-    @abstractmethod
-    def validate(self, value: Any) -> bool:
-        """Validate if a decoded value matches its configuration-driven rules.
-
-        Must be implemented by subclasses to handle type-specific validation
-        (e.g., range checks for float, allowed states for int, or flag checks for bool).
-
-        Args:
-            value (Any): The decoded physical value to check.
-
-        Returns:
-            bool: True if valid according to the configuration, False if not.
-        """
-        pass
-
-    def set_parameters(self, **kwargs) -> None:
-        """Optional method to update internal sensor configurations or thresholds.
-
-        Args:
-            **kwargs: Arbitrary keyword arguments representing configuration parameters.
-        """
-        pass
+    # def write(self, data: Any) -> bool:
+    #     """
+    #     Optional: Sends data or configuration commands back to the sensor.
+    #     """
+    #     pass
